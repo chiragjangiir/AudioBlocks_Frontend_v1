@@ -237,7 +237,7 @@ export function useQueuedAudio() {
       incoming.muted = live.current.playback.isMuted;
       play(incoming);
       dispose(outgoing);
-      setDuration(Number.isFinite(incoming.duration) ? incoming.duration : 0);
+      setDuration(typeof incoming.duration === 'number' ? incoming.duration : 0);
       live.current.playback.next();
       return true;
     };
@@ -313,9 +313,14 @@ export function useQueuedAudio() {
       const paused = () => persistResume(element, true);
       const metadata = () => {
         if (element === audioRef.current) {
-          setDuration(Number.isFinite(element.duration) ? element.duration : 0);
+          setDuration(typeof element.duration === 'number' ? element.duration : 0);
           restoreResume(element);
           onTime(element);
+        }
+      };
+      const onDuration = () => {
+        if (element === audioRef.current) {
+          setDuration(typeof element.duration === 'number' ? element.duration : 0);
         }
       };
       const ended = () => {
@@ -371,6 +376,7 @@ export function useQueuedAudio() {
       element.addEventListener('timeupdate', time);
       element.addEventListener('pause', paused);
       element.addEventListener('loadedmetadata', metadata);
+      element.addEventListener('durationchange', onDuration);
       element.addEventListener('ended', ended);
       element.addEventListener('playing', playing);
       element.addEventListener('waiting', waiting);
@@ -379,6 +385,7 @@ export function useQueuedAudio() {
         element.removeEventListener('timeupdate', time);
         element.removeEventListener('pause', paused);
         element.removeEventListener('loadedmetadata', metadata);
+        element.removeEventListener('durationchange', onDuration);
         element.removeEventListener('ended', ended);
         element.removeEventListener('playing', playing);
         element.removeEventListener('waiting', waiting);
